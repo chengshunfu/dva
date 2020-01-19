@@ -1,12 +1,37 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import dva,{ connect } from './dva';
+import { createBrowserHistory } from 'history';
+let app = dva({
+    history:createBrowserHistory()
+});
 
-ReactDOM.render(<App />, document.getElementById('root'));
+app.model({
+    namespace:'counter',
+    state:{number:0},
+    reducers:{
+        add(state){
+            return {number:state.number+1};
+        },
+        miuns(state){
+            return {number:state.number-1};
+        }
+    }
+});
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+function Counter(props){
+    return (
+        <div>
+            <p>{props.number}</p>
+            <button onClick={()=> props.dispatch({type:'counter/add'})}>同步+1</button>
+            <button onClick={()=> props.dispatch({type:'counter/miuns'})}>同步-1</button>
+        </div>
+    )
+}
+
+let ConnectedCounter = connect(state=>state.counter)(Counter)
+
+app.router(()=>(
+    <ConnectedCounter />
+));
+
+app.start('#root');
